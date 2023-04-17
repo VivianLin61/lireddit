@@ -14,4 +14,5 @@ export default {
   password: '',
   debug: !__prod__,
   type: 'postgresql',
+  allowGlobalContext: true,
 } as Parameters<typeof MikroORM.init>[0];
