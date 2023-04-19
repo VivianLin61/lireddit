@@ -9,23 +9,20 @@ import { PostResolver } from './resolvers/post';
 import { UserResolver } from './resolvers/user';
 import RedisStore from 'connect-redis';
 import session from 'express-session';
-import { createClient } from 'redis';
 import { MyContext } from './types';
-import { sendEmail } from './sendemail';
-import { User } from './entities/User';
+import Redis from 'ioredis';
 
 const main = async () => {
   const orm = await MikroORM.init(microConfig);
-  await orm.em.nativeDelete(User, {});
   await orm.getMigrator().up();
   const app = express();
   // Initialize client.
-  let redisClient = createClient();
-  redisClient.connect().catch(console.error);
+
+  const redis = new Redis();
 
   // Initialize store.
   let redisStore = new RedisStore({
-    client: redisClient,
+    client: redis,
     disableTouch: true,
     prefix: 'myapp:',
   });
@@ -53,7 +50,7 @@ const main = async () => {
 
       validate: false,
     }),
-    context: ({ req, res }): MyContext => ({ em: orm.em, req, res }),
+    context: ({ req, res }): MyContext => ({ em: orm.em, req, res, redis }),
   });
 
   await apolloServer.start();

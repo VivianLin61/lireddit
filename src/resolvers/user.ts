@@ -12,6 +12,9 @@ import {
 import argon2 from 'argon2';
 import { UsernamePasswordInput } from './UsernamePasswordInput';
 import { validateRegister } from '../utils/validateRegister';
+import { sendEmail } from '../sendEmail';
+import { v4 } from 'uuid';
+import { FORGET_PASSWORD_PREFIX } from '../constants';
 
 @ObjectType()
 class Error {
@@ -31,8 +34,28 @@ class UserResponse {
 @Resolver()
 export class UserResolver {
   @Mutation(() => Boolean)
-  async forgotPassword(@Arg('email') email: string, @Ctx() { em }: MyContext) {
-    // const user = await em.findOne(User, { email });
+  async forgotPassword(
+    @Arg('email') email: string,
+    @Ctx() { em, redis }: MyContext
+  ) {
+    const user = await em.findOne(User, { email });
+    if (!user) {
+      //email not in db
+      return true;
+    }
+
+    const token = v4();
+    await redis.set(
+      FORGET_PASSWORD_PREFIX + token,
+      user.id,
+      'EX',
+      1000 * 60 * 60 * 24 * 3
+    ); //3day
+    await sendEmail(
+      email,
+      `<a href="http://localhost:3000/change-password/${token}">reset password</a>`
+    );
+    return true;
   }
 
   @Query(() => User, { nullable: true })
