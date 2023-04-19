@@ -1,5 +1,5 @@
 import { MikroORM } from '@mikro-orm/core';
-import { __prod__ } from './constants';
+import { COOKIE_NAME, __prod__ } from './constants';
 import microConfig from './mikro-orm.config';
 import express from 'express';
 import { ApolloServer } from 'apollo-server-express';
@@ -7,7 +7,6 @@ import { buildSchema } from 'type-graphql';
 import { HelloResolver } from './resolvers/hello';
 import { PostResolver } from './resolvers/post';
 import { UserResolver } from './resolvers/user';
-import cors from 'cors';
 import RedisStore from 'connect-redis';
 import session from 'express-session';
 import { createClient } from 'redis';
@@ -31,7 +30,7 @@ const main = async () => {
   // Initialize sesssion storage.
   app.use(
     session({
-      name: 'qid',
+      name: COOKIE_NAME,
       store: redisStore,
       cookie: {
         maxAge: 1000 * 60 * 60 * 24 * 365 * 10, // 10 years
