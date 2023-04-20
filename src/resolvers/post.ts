@@ -1,23 +1,64 @@
 // import { Post } from 'src/entities/Post';
 import { Post } from '../entities/Post';
+import {
+  Arg,
+  Ctx,
+  Field,
+  InputType,
+  Int,
+  Mutation,
+  Query,
+  Resolver,
+  UseMiddleware,
+} from 'type-graphql';
 import { MyContext } from 'src/types';
-import { Arg, Ctx, Int, Mutation, Query, Resolver } from 'type-graphql';
+import { isAuth } from '../middleware/isAuth';
+import { AppDataSource } from '../app-data-source';
+
+@InputType()
+class PostInput {
+  @Field()
+  title: string;
+  @Field()
+  text: string;
+}
 
 @Resolver()
 export class PostResolver {
   @Query(() => [Post])
-  posts(): Promise<Post[]> {
-    return Post.find();
+  async posts(
+    @Arg('limit', () => Int!) limit: number,
+    @Arg('cursor', () => String, { nullable: true }) cursor: string
+  ): Promise<Post[]> {
+    const realLimt = Math.min(50, limit);
+    const qb = AppDataSource.getRepository(Post)
+      .createQueryBuilder('p')
+      .orderBy('"createdAt"', 'DESC')
+      .take(realLimt);
+
+    if (cursor) {
+      qb.where('"createdAt" < :cursor', { cursor: new Date(parseInt(cursor)) });
+    }
+
+    return qb.getMany();
   }
   @Query(() => Post, { nullable: true })
   post(@Arg('id') id: number): Promise<Post | null> {
     return Post.findOne({ where: { id } });
   }
 
-  @Mutation(() => Post, { nullable: true })
-  async createPost(@Arg('title') title: string): Promise<Post | null> {
-    return Post.create({ title }).save();
+  @Mutation(() => Post)
+  @UseMiddleware(isAuth)
+  async createPost(
+    @Arg('input') input: PostInput,
+    @Ctx() { req }: MyContext
+  ): Promise<Post> {
+    return Post.create({
+      ...input,
+      creatorId: req.session.userId,
+    }).save();
   }
+
   @Mutation(() => Post, { nullable: true })
   async updatePost(
     @Arg('id') id: number,

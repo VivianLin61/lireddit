@@ -13,7 +13,8 @@ import Redis from 'ioredis';
 import { AppDataSource } from './app-data-source';
 const main = async () => {
   AppDataSource.initialize()
-    .then(() => {
+    .then(async () => {
+      await AppDataSource.runMigrations();
       console.log('Data Source has been initialized!');
     })
     .catch((err) => {
