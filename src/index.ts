@@ -12,12 +12,13 @@ import { MyContext } from './types';
 import Redis from 'ioredis';
 import cors from 'cors';
 import { AppDataSource } from './app-data-source';
-// import { Post } from './entities/Post';
+import { Post } from './entities/Post';
 
 const main = async () => {
   AppDataSource.initialize()
     .then(async () => {
-      await AppDataSource.runMigrations();
+      // Post.delete({});
+      // await AppDataSource.runMigrations();
       console.log('Data Source has been initialized!');
     })
     .catch((err) => {

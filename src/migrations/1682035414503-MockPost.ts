@@ -327,5 +327,5 @@ Nulla ut erat id mauris vulputate elementum. Nullam varius. Nulla facilisi.', 1,
     `);
   }
 
-  public async down(queryRunner: QueryRunner): Promise<void> {}
+  public async down(_: QueryRunner): Promise<void> {}
 }
