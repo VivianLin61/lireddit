@@ -153,7 +153,8 @@ export class PostResolver {
   @Mutation(() => Post, { nullable: true })
   async updatePost(
     @Arg('id') id: number,
-    @Arg('title', () => String, { nullable: true }) title: string
+    @Arg('title', () => String, { nullable: true }) title: string,
+    @Arg('title', () => String, { nullable: true }) text: string
   ): Promise<Post | null> {
     const post = await Post.findOne({ where: { id } });
     if (!post) {
@@ -167,8 +168,20 @@ export class PostResolver {
   }
 
   @Mutation(() => Boolean)
-  async deletePost(@Arg('id') id: number): Promise<boolean> {
-    await Post.delete({ id });
+  @UseMiddleware(isAuth)
+  async deletePost(
+    @Arg('id', () => Int) id: number,
+    @Ctx() { req }: MyContext
+  ): Promise<boolean> {
+    // const post = await Post.findOne({ where: { id } });
+    // if (!post) {
+    //   return false;
+    // }
+    // if (post.creatorId !== req.session.userId) {
+    //   throw new Error('not authorized');
+    // }
+    // await Updoot.delete({ postId: id });
+    await Post.delete({ id, creatorId: req.session.userId });
     return true;
   }
 }
