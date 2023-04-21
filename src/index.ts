@@ -10,7 +10,10 @@ import RedisStore from 'connect-redis';
 import session from 'express-session';
 import { MyContext } from './types';
 import Redis from 'ioredis';
+import cors from 'cors';
 import { AppDataSource } from './app-data-source';
+// import { Post } from './entities/Post';
+
 const main = async () => {
   AppDataSource.initialize()
     .then(async () => {
@@ -26,6 +29,13 @@ const main = async () => {
 
   const redis = new Redis();
 
+  app.set('trust proxy', 1);
+  app.use(
+    cors({
+      origin: 'http://localhost:3000',
+      credentials: true,
+    })
+  );
   // Initialize store.
   let redisStore = new RedisStore({
     client: redis,
@@ -34,6 +44,7 @@ const main = async () => {
   });
 
   // Initialize sesssion storage.
+
   app.use(
     session({
       name: COOKIE_NAME,
