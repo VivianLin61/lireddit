@@ -32,6 +32,8 @@ class PostInput {
 class PaginatedPosts {
   @Field(() => [Post])
   posts: Post[];
+  @Field()
+  hasMore: boolean;
 }
 
 @Resolver(() => Post)
@@ -100,27 +102,31 @@ export class PostResolver {
     return true;
   }
 
-  @Query(() => [Post])
+  @Query(() => PaginatedPosts)
   async posts(
     @Arg('limit', () => Int!) limit: number,
     @Arg('cursor', () => String, { nullable: true }) cursor: string
-  ): Promise<Post[]> {
-    const realLimt = Math.min(50, limit);
+  ): Promise<PaginatedPosts> {
+    const realLimit = Math.min(50, limit);
+    const reaLimitPlusOne = realLimit + 1;
 
     const qb = AppDataSource.getRepository(Post)
       .createQueryBuilder('p')
       .innerJoinAndSelect('p.user', 'user')
       .orderBy('p.createdAt', 'DESC')
-      .take(realLimt);
+      .take(reaLimitPlusOne);
 
     if (cursor) {
       qb.where('p."createdAt" < :cursor', {
         cursor: new Date(parseInt(cursor)),
       });
     }
-
     const posts = await qb.getMany();
-    return posts;
+    //it we are able to get 1 more posts than the reallimit there is more
+    return {
+      posts: posts.slice(0, realLimit),
+      hasMore: posts.length === reaLimitPlusOne,
+    };
   }
   @Query(() => Post, { nullable: true })
   post(@Arg('id', () => Int) id: number): Promise<Post | null> {
