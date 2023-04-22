@@ -43,6 +43,17 @@ export class PostResolver {
     return root.text.slice(0, 50);
   }
 
+  @FieldResolver(() => Int, { nullable: true })
+  async voteStatus(@Root() post: Post, @Ctx() { req }: MyContext) {
+    if (!req.session.userId) {
+      return null;
+    }
+    const updoot = await Updoot.findOne({
+      where: { postId: post.id, userId: req.session.userId },
+    });
+    return updoot ? updoot.value : null;
+  }
+
   @Mutation(() => Boolean)
   @UseMiddleware(isAuth)
   async vote(
