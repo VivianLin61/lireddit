@@ -126,13 +126,10 @@ export class UserResolver {
   @Query(() => User, { nullable: true })
   async me(@Ctx() { req }: MyContext) {
     // you are not logged in
-    console.log('me query');
     if (!req.session.userId) {
       return null;
     }
-    console.log('req.session.userId:', req.session.userId);
     const user = await User.findOne({ where: { id: req.session.userId } });
-    console.log('Me', user);
     return user;
   }
   @Mutation(() => UserResponse)
@@ -159,9 +156,7 @@ export class UserResolver {
         .returning('*')
         .execute();
       user = result.raw[0];
-      console.log('result:', result);
     } catch (err) {
-      console.log('err:', err);
       if (err.code === '23505' || err.detail.includes('already exists')) {
         // duplicate usernaee error
         return {
@@ -173,7 +168,6 @@ export class UserResolver {
           ],
         };
       }
-      console.log('message:', err.message);
     }
     req.session.userId = user.id;
     return { user };
@@ -226,7 +220,6 @@ export class UserResolver {
       req.session.destroy((err) => {
         res.clearCookie('qid');
         if (err) {
-          console.log(err);
           resolve(false);
           return;
         }

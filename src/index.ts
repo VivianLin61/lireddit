@@ -17,8 +17,6 @@ import { AppDataSource } from './app-data-source';
 const main = async () => {
   AppDataSource.initialize()
     .then(async () => {
-      // Post.delete({});
-      // await AppDataSource.runMigrations();
       console.log('Data Source has been initialized!');
     })
     .catch((err) => {
@@ -88,4 +86,3 @@ const main = async () => {
 
 main();
 
-console.log('Hello World');
