@@ -39,12 +39,5 @@
     "type-graphql": "^1.1.1",
     "typeorm": "^0.3.15",
     "uuid": "^9.0.0"
-  },
-  "mikro-orm": {
-    "useTsNode": true,
-    "configPaths": [
-      "./src/mikro-orm.config.ts",
-      "./dist/mikro-orm.config.js"
-    ]
   }
 }

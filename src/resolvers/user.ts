@@ -126,12 +126,13 @@ export class UserResolver {
   @Query(() => User, { nullable: true })
   async me(@Ctx() { req }: MyContext) {
     // you are not logged in
+    console.log('me query');
     if (!req.session.userId) {
       return null;
     }
     console.log('req.session.userId:', req.session.userId);
     const user = await User.findOne({ where: { id: req.session.userId } });
-
+    console.log('Me', user);
     return user;
   }
   @Mutation(() => UserResponse)
@@ -214,7 +215,6 @@ export class UserResolver {
         ],
       };
     }
-
     req.session.userId = user.id;
 
     return { user };
