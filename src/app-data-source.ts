@@ -6,11 +6,9 @@ import { DataSource } from 'typeorm';
 
 export const AppDataSource = new DataSource({
   type: 'postgres',
-  username: 'vivianlin',
-  password: '',
-  database: 'lireddit2',
   logging: true,
-  synchronize: true,
+  url: process.env.DATABASE_URL,
+  // synchronize: true,
   migrations: [path.join(__dirname, './migrations/*')],
   entities: [Post, User, Updoot],
 });

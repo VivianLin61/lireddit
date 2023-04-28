@@ -1,4 +1,5 @@
 import 'reflect-metadata';
+import 'dotenv-safe/config';
 import { COOKIE_NAME, __prod__ } from './constants';
 import express from 'express';
 import { ApolloServer } from 'apollo-server-express';
@@ -18,6 +19,7 @@ const main = async () => {
   AppDataSource.initialize()
     .then(async () => {
       console.log('Data Source has been initialized!');
+      await AppDataSource.runMigrations();
     })
     .catch((err) => {
       console.error('Error during Data Source initialization', err);
@@ -26,12 +28,12 @@ const main = async () => {
   const app = express();
   // Initialize client.
 
-  const redis = new Redis();
+  const redis = new Redis(process.env.REDIS_URL);
 
   app.set('trust proxy', 1);
   app.use(
     cors({
-      origin: 'http://localhost:3000',
+      origin: process.env.CORS_ORIGIN,
       credentials: true,
     })
   );
@@ -43,7 +45,6 @@ const main = async () => {
   });
 
   // Initialize sesssion storage.
-
   app.use(
     session({
       name: COOKIE_NAME,
@@ -56,7 +57,7 @@ const main = async () => {
       },
       resave: false, // required: force lightweight session keep alive (touch)
       saveUninitialized: false, // recommended: only save session when data exists
-      secret: 'safjaldfjlkjcjiojeqw',
+      secret: process.env.SESSION_SECRET,
     })
   );
 
@@ -74,15 +75,14 @@ const main = async () => {
   apolloServer.applyMiddleware({
     app,
     cors: {
-      origin: ['http://localhost:3000'],
+      origin: process.env.CORS_ORIGIN,
       credentials: true,
     },
   });
 
-  app.listen(4000, () => {
+  app.listen(parseInt(process.env.PORT), () => {
     console.log('server started on localhost:4000');
   });
 };
 
 main();
-

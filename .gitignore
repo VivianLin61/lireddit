@@ -28,3 +28,4 @@ build/
 # Dependencies
 package-lock.json
 yarn.lock
+.env
