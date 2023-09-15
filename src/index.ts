@@ -54,6 +54,7 @@ const main = async () => {
         sameSite: 'lax', // csrf
         httpOnly: true,
         secure: __prod__, // cookie only works in https
+        domain: __prod__ ? '.codespace.pro' : undefined,
       },
       resave: false, // required: force lightweight session keep alive (touch)
       saveUninitialized: false, // recommended: only save session when data exists
