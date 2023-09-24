@@ -49,9 +49,7 @@ jobs:
         host: ${{ secrets.SSH_HOST }}
         username: ${{ secrets.USERNAME }}
         key: ${{ secrets.SSH_KEY }}
-
-        script: |
-          mkdir test #create a folder called test
+        script: whoami
         
   
 
