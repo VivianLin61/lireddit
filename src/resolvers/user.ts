@@ -1,5 +1,5 @@
-import { User } from '../entities/User';
-import { MyContext } from 'src/types';
+import { User } from "../entities/User";
+import { MyContext } from "src/types";
 import {
   Arg,
   Ctx,
@@ -10,14 +10,13 @@ import {
   Query,
   Resolver,
   Root,
-} from 'type-graphql';
-import argon2 from 'argon2';
-import { UsernamePasswordInput } from './UsernamePasswordInput';
-import { validateRegister } from '../utils/validateRegister';
-import { sendEmail } from '../sendEmail';
-import { v4 } from 'uuid';
-import { FORGET_PASSWORD_PREFIX } from '../constants';
-import { AppDataSource } from '../app-data-source';
+} from "type-graphql";
+import argon2 from "argon2";
+import { UsernamePasswordInput } from "./UsernamePasswordInput";
+import { validateRegister } from "../utils/validateRegister";
+// import { sendEmail } from "../sendEmail";
+import { FORGET_PASSWORD_PREFIX } from "../constants";
+import { AppDataSource } from "../app-data-source";
 
 @ObjectType()
 class Error {
@@ -43,20 +42,20 @@ export class UserResolver {
       return user.email;
     }
     //current user wants to see someone elses email
-    return '';
+    return "";
   }
   @Mutation(() => UserResponse)
   async changePassword(
-    @Arg('token') token: string,
-    @Arg('newPassword') newPassword: string,
+    @Arg("token") token: string,
+    @Arg("newPassword") newPassword: string,
     @Ctx() { req, redis }: MyContext
   ): Promise<UserResponse> {
     if (newPassword.length <= 2) {
       return {
         errors: [
           {
-            field: 'newPassword',
-            message: 'length must be greater than 2',
+            field: "newPassword",
+            message: "length must be greater than 2",
           },
         ],
       };
@@ -67,8 +66,8 @@ export class UserResolver {
       return {
         errors: [
           {
-            field: 'token',
-            message: 'token expired',
+            field: "token",
+            message: "token expired",
           },
         ],
       };
@@ -80,8 +79,8 @@ export class UserResolver {
       return {
         errors: [
           {
-            field: 'token',
-            message: 'user no longer exists',
+            field: "token",
+            message: "user no longer exists",
           },
         ],
       };
@@ -97,31 +96,31 @@ export class UserResolver {
     return { user };
   }
 
-  @Mutation(() => Boolean)
-  async forgotPassword(
-    @Arg('email') email: string,
-    @Ctx() { redis }: MyContext
-  ) {
-    const user = await User.findOne({ where: { email } });
+  //   @Mutation(() => Boolean)
+  //   async forgotPassword(
+  //     @Arg("email") email: string,
+  //     @Ctx() { redis }: MyContext
+  //   ) {
+  //     const user = await User.findOne({ where: { email } });
 
-    if (!user) {
-      //email not in db
-      return true;
-    }
+  //     if (!user) {
+  //       //email not in db
+  //       return true;
+  //     }
 
-    const token = v4();
-    await redis.set(
-      FORGET_PASSWORD_PREFIX + token,
-      user.id,
-      'EX',
-      1000 * 60 * 60 * 24 * 3
-    ); //3day
-    await sendEmail(
-      email,
-      `<a href="http://localhost:3000/change-password/${token}">reset password</a>`
-    );
-    return true;
-  }
+  //     const token = v4();
+  //     await redis.set(
+  //       FORGET_PASSWORD_PREFIX + token,
+  //       user.id,
+  //       "EX",
+  //       1000 * 60 * 60 * 24 * 3
+  //     ); //3day
+  //     // await sendEmail(
+  //     //   email,
+  //     //   `<a href="http://localhost:3000/change-password/${token}">reset password</a>`
+  //     // );
+  //     return true;
+  //   }
 
   @Query(() => User, { nullable: true })
   async me(@Ctx() { req }: MyContext) {
@@ -134,7 +133,7 @@ export class UserResolver {
   }
   @Mutation(() => UserResponse)
   async register(
-    @Arg('options') options: UsernamePasswordInput,
+    @Arg("options") options: UsernamePasswordInput,
     @Ctx() { req }: MyContext
   ): Promise<UserResponse> {
     const errors = validateRegister(options);
@@ -153,17 +152,17 @@ export class UserResolver {
           password: hashedPassword,
           email: options.email,
         })
-        .returning('*')
+        .returning("*")
         .execute();
       user = result.raw[0];
     } catch (err) {
-      if (err.code === '23505' || err.detail.includes('already exists')) {
+      if (err.code === "23505" || err.detail.includes("already exists")) {
         // duplicate usernaee error
         return {
           errors: [
             {
-              field: 'username',
-              message: 'username already taken',
+              field: "username",
+              message: "username already taken",
             },
           ],
         };
@@ -175,12 +174,12 @@ export class UserResolver {
 
   @Mutation(() => UserResponse)
   async login(
-    @Arg('usernameOrEmail') usernameOrEmail: string,
-    @Arg('password') password: string,
+    @Arg("usernameOrEmail") usernameOrEmail: string,
+    @Arg("password") password: string,
     @Ctx() { req }: MyContext
   ): Promise<UserResponse> {
     const user = await User.findOne(
-      usernameOrEmail.includes('@')
+      usernameOrEmail.includes("@")
         ? {
             where: { email: usernameOrEmail },
           }
@@ -192,8 +191,8 @@ export class UserResolver {
       return {
         errors: [
           {
-            field: 'usernameOrEmail',
-            message: 'that username does not exist',
+            field: "usernameOrEmail",
+            message: "that username does not exist",
           },
         ],
       };
@@ -203,8 +202,8 @@ export class UserResolver {
       return {
         errors: [
           {
-            field: 'password',
-            message: 'incorrect password',
+            field: "password",
+            message: "incorrect password",
           },
         ],
       };
@@ -218,7 +217,7 @@ export class UserResolver {
   logout(@Ctx() { req, res }: MyContext) {
     return new Promise((resolve) =>
       req.session.destroy((err) => {
-        res.clearCookie('qid');
+        res.clearCookie("qid");
         if (err) {
           resolve(false);
           return;
